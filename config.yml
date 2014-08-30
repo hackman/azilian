@@ -1,0 +1,11 @@
+conf_dir: /etc/azilian
+base_dir: /var/azilian/c1
+log_file: /var/log/azilian/c1.log
+cgroup_base: /cgroup/azilian
+limits: 
+    cpu_quota: 60
+    cpu_period: 60
+    memory: 1024000000
+    procs: 300
+    devices: 
+drop_caps: sys_module sys_time sys_rawio sys_pacct sys_tty_config mac_admin mac_override audit_control audit_write mknod setfcap syslog wake_alarm block_suspend
