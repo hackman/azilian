@@ -1,0 +1,51 @@
+Azilian - container implementation entirely in Perl
+===================================================
+
+I started the Azilian project because most of my management tools for containers were 
+written in Perl and constantly interacting with LXC trough system, exec and so on was
+hitting the performence of our Infrastructure. 
+
+So I decided to implement containers entirely in Perl.
+
+The project should consist of the following tools:
+
+ az-start	- Start a container with predefined configuration
+ az-stop	- Stop a named container
+ az-restart	- Restart a named container
+ az-list	- List all containers(running, stopped or both)
+ az-attach	- Enter a container(should be able to execute commands inside of the 
+			  container storage even if the container is not running)
+ az-top		- Similar to list, but include stats for CPU, Memory, I/O and Networking
+ az-create	- Create a container
+ az-destroy - Destroy already existing container
+
+Currently I have finished only the start, stop and attach commands and I'm working
+on the rest.
+
+Network configuration is not done at the moment.
+
+DEPENDENCIES
+	This software requires the following Perl modules:
+		YAML::Tiny
+		Linux::Unshare
+		Linux::Setns
+		Linux::Capabilities (also requires Libcap)
+		BSD::Resource
+
+
+BUGS AND SUGGESTIONS
+    contact me at hackman at cpan.org
+
+REPOSITORY
+    http://github.com/hackman/azilian
+
+COPYRIGHT AND LICENCE
+
+This code is under GPLv2.
+A proper copy of the license can be found in the LICENSE file located in the current directory.
+
+Copyright (C) 2014 by Marian HackMan Marinov
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.18.1 or,
+at your option, any later version of Perl 5 you may have available.
