@@ -1,0 +1,72 @@
+#!/usr/bin/perl -T
+use strict;
+use warnings;
+use POSIX qw(strftime);
+use YAML::Tiny;
+use lib './';
+use Azilian;
+
+helpers(undef, 'pre-read-conf');
+my $yaml = YAML::Tiny->read('config.yml');
+my $config = $yaml->[0];
+my $name = '';
+my $setup_stage = 0;
+
+# config{'conf_dir'}	- Directory where all container configuration files reside
+# config{'base_dir'}	- Directory in which to chroot
+# config{'limits'}		- Cgroup limits
+#				->{'cpu_quota'}
+#				->{'cpu_period'}
+#				->{'memory'}
+#				->{'procs'}
+#				->{'devices'}[]
+# config{'cgroup_base'}	- Cgroups main mount
+# config{'log_file'}	- default log file
+# config{'drop_caps'}	- list of capabilities which have to be dropped
+
+open my $LOG, '>>', $$config{'log_file'} or die "Error: unable to open the log file($$config{'log_file'})\n";
+
+# Make output unbuffered
+$| = 1;
+select((select($LOG), $| = 1)[0]);
+
+#sub logger {
+#	print $LOG strftime('%b %d %H:%M:%S', localtime(time)) . ' ' . $_[0] ."\n";
+#}
+
+sub usage_and_exit {
+	print "Error: $_[0]\n";
+	print "Usage: $0 container_name";
+	exit 1;
+}
+
+# Name handling
+if (!defined($ARGV[0])) {
+	usage_and_exit('no container name supplied');
+}
+if ($ARGV[0] =~ m/^([a-zA-Z0-9_\-]+)$/) {
+	$name = $1;
+} else {
+	usage_and_exit('invalid container name supplied');
+}
+
+## Main
+#
+helpers($$config, 'pre_cgroup', $name);
+setup_cgroup($$config, $name);
+helpers($$config, 'post_cgroup', $name);
+my $pid = fork();
+if ($pid == 0) {
+	helpers($$config, 'pre_chroot', $name);
+	chroot($$config{'base_dir'});
+	chdir('/');
+	helpers($$config, 'post_chroot', $name);
+	setup_namespaces($$config, $name);
+	helpers($$config, 'post_ns', $name);
+	drop_capabilities($$config);
+	helpers($$config, 'post_drop_caps', $name);
+	init_container($$config, $name);
+} else {
+	setup_usermaps($$config, $name);
+	helpers($$config, 'post_usermaps', $name);
+}
